@@ -3,7 +3,18 @@ use std::io::{prelude::*, Error, ErrorKind};
 use super::Icon;
 
 fn download_icon(url: &str) -> Result<Icon, Error> {
-    let response = reqwest::blocking::get(url);
+    let client = reqwest::blocking::Client::new();
+    // custom headers
+    let mut headers = reqwest::header::HeaderMap::new();
+    headers.insert(
+        reqwest::header::USER_AGENT,
+        reqwest::header::HeaderValue::from_static("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36"),
+    );
+
+    let response = client
+        .get(url)
+        .headers(headers)
+        .send();
 
     match response {
         Ok(response) => {
@@ -38,6 +49,8 @@ fn parse_response(mut response: reqwest::blocking::Response, url: &str) -> Resul
         ".jpeg"
     } else if content_type.contains("jpg") {
         "jpg"
+    } else if content_type.contains("ico") {
+        "ico"
     } else {
         ""
     };
@@ -67,8 +80,12 @@ fn parse_response(mut response: reqwest::blocking::Response, url: &str) -> Resul
 pub fn download_icons(icon_urls: &[String]) -> Result<Vec<Icon>, reqwest::Error> {
     let mut results = Vec::new();
     for url in icon_urls {
-        if let Ok(icon) = download_icon(url) {
-            results.push(icon);
+        let icon = download_icon(url);
+        if icon.is_ok() {
+            println!("url: {}", url);
+            results.push(icon.unwrap());
+        } else {
+            // println!("url: {}, error: {}", url, icon.err().unwrap());
         }
     }
     Ok(results)

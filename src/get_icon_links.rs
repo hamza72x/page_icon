@@ -62,5 +62,6 @@ pub fn get_icon_links(root_url: &str, dom: &str) -> Vec<String> {
         .map(|icon_link| Url::parse(&root_url).unwrap().join(&icon_link).unwrap().into())
         .collect();
     icon_links.push(format!("{}apple-touch-icon.png", domain_url));
+
     icon_links
 }
